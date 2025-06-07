@@ -9,7 +9,7 @@ function M.run()
     path = path:gsub("%%20", " ")
     os.execute('mpv --start=' .. time .. ' "' .. path .. '" >/dev/null 2>&1 &')
   else
-    vim.notify("No se encontró un video con formato válido en esta línea.", vim.log.levels.WARN)
+    vim.notify("Invalid video path or timestamp format on this line.", vim.log.levels.WARN)
   end
 end
 
