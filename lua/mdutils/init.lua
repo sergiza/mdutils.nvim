@@ -8,13 +8,13 @@ function M.setup()
   vim.api.nvim_create_user_command("Mdutils", function(opts)
     local arg = opts.args
     if arg == "opener" then
-      opener.open_link()
+      opener.run()
     elseif arg == "todo" then
       todo.run()
     elseif arg == "mediaplayer" then
       mediaplayer.run()
     else
-      vim.notify("Subcomando inválido: " .. arg, vim.log.levels.ERROR)
+      vim.notify("Invalid subcommand: " .. arg, vim.log.levels.ERROR)
     end
   end, { nargs = 1, complete = function()
     return { "opener", "todo", "mediaplayer" }

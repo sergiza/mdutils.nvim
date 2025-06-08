@@ -6,7 +6,7 @@ M.text_extensions = {
   [""] = true,
 }
 
-function M.open_link()
+function M.run()
   local line = vim.api.nvim_get_current_line()
   local cursor_col = vim.api.nvim_win_get_cursor(0)[2] + 1
 
