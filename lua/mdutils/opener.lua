@@ -45,7 +45,8 @@ function M.run()
   if M.text_extensions[ext] then
     vim.cmd("edit " .. vim.fn.fnameescape(full_path))
   else
-    vim.fn.jobstart("xdg-open '" .. full_path .. "'", { detach = true, shell = true })
+    -- vim.fn.jobstart("xdg-open '" .. full_path .. "'", { detach = true, shell = true })
+    vim.fn.jobstart({ "xdg-open", full_path }, { detach = true })
   end
 end
 
