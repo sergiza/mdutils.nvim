@@ -70,5 +70,6 @@ function M.run()
             end
         end,
     })
+end
 
-    return M
+return M
