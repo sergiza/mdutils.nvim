@@ -59,7 +59,7 @@ function M.run()
   vim.notify(msg, vim.log.levels.INFO)
 
   -- Launch mpv
-  local cmd = { "mpv", "--", resolved }
+  local cmd = { "mpv", "--msg-level=all=error", "--", resolved }
   if ts then table.insert(cmd, 2, "--start=" .. ts) end
   vim.fn.jobstart(cmd, {
     detach = true,
