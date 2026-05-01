@@ -7,15 +7,15 @@ function M.setup()
             require("mdutils.opener").run()
         elseif arg == "todo" then
             require("mdutils.todo").run()
-        elseif arg == "mediaplayer" then
-            require("mdutils.mediaplayer").run()
+        elseif arg == "openAt" then
+            require("mdutils.openAt").run()
         else
             vim.notify("Mdutils: unknown command '" .. arg .. "'", vim.log.levels.ERROR)
         end
     end, {
         nargs = 1,
         complete = function()
-            return { "opener", "todo", "mediaplayer" }
+            return { "opener", "todo", "openAt" }
         end,
     })
 end
