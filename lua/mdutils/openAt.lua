@@ -120,7 +120,7 @@ end
 
 function M.run()
     local line = vim.api.nvim_get_current_line()
-    local label, path, ts, page = parse_link_and_arg(line)
+    local _, path, ts, page = parse_link_and_arg(line)
 
     if not path or path == "" then
         vim.notify("Mdutils openAt: no markdown link on this line", vim.log.levels.WARN)
@@ -128,14 +128,10 @@ function M.run()
     end
 
     local resolved = resolve_path(path)
-    local shown    = (label and label ~= "" and label) or path
 
     if is_pdf(resolved) then
         open_pdf(resolved, page and tonumber(page))
     else
-        local msg = ("Opening '%s' → %s"):format(shown, resolved)
-        if ts then msg = msg .. (" at %s"):format(ts) end
-        vim.notify(msg, vim.log.levels.INFO)
         open_media(resolved, ts)
     end
 end
