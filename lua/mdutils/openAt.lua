@@ -48,20 +48,28 @@ local PDF_VIEWERS = {
 }
 
 local MEDIA_PLAYERS = {
-    -- NOTE: VLC uses --start-time which expects seconds, not HH:MM:SS.
-    -- TODO: VLC support: HH:MM:SS to seconds converter
-    { "mpv",      "--start"       },
-    { "vlc",      "--start-time"  },
-    { "xdg-open", nil             },
+    { "vlc",      "--start-time", true  },  -- expects seconds
+    { "mpv",      "--start",      false },  -- expects HH:MM:SS
+    { "xdg-open", nil,            false },
 }
 
 local function find_software(list)
     for _, v in ipairs(list) do
         if vim.fn.executable(v[1]) == 1 then
-            return v[1], v[2]
+            return v[1], v[2], v[3]
         end
     end
-    return nil, nil
+    return nil, nil, nil
+end
+
+-- CONVERTER: "HH:MM:SS" (or "MM:SS") -> seconds
+local function ts_to_seconds(ts)
+    local h, m, s = ts:match("^(%d+):(%d+):(%d+)$")
+    if not h then
+        h = "0"
+        m, s = ts:match("^(%d+):(%d+)$")
+    end
+    return tonumber(h) * 3600 + tonumber(m) * 60 + tonumber(s)
 end
 
 local function open_pdf(resolved, page)
@@ -79,7 +87,7 @@ local function open_pdf(resolved, page)
     table.insert(cmd, resolved)
 
     local msg = ("Opening PDF with %s → %s"):format(viewer, resolved)
-    if page then msg = msg .. (" (page %d)"):format(page) end
+    if page and page_flag then msg = msg .. (" (page %d)"):format(page) end
     vim.notify(msg, vim.log.levels.INFO)
 
     vim.fn.jobstart(cmd, {
@@ -94,17 +102,22 @@ local function open_pdf(resolved, page)
 end
 
 local function open_media(resolved, ts)
-    local player, ts_flag = find_software(MEDIA_PLAYERS)
+    local player, ts_flag, wants_seconds = find_software(MEDIA_PLAYERS)
     if not player then
         vim.notify("Mdutils openAt: no media player found.", vim.log.levels.ERROR)
         return
     end
 
-    local cmd = { player, "--", resolved }
-    if ts and ts_flag then table.insert(cmd, 2, ts_flag .. "=" .. ts) end
+    local cmd = { player }
+    if ts and ts_flag then
+        local value = wants_seconds and tostring(ts_to_seconds(ts)) or ts
+        table.insert(cmd, ts_flag .. "=" .. value)
+    end
+    if ts_flag then table.insert(cmd, "--") end
+    table.insert(cmd, resolved)
 
     local msg = ("Opening media with %s → %s"):format(player, resolved)
-    if ts then msg = msg .. (" at %s"):format(ts) end
+    if ts and ts_flag then msg = msg .. (" at %s"):format(ts) end
     vim.notify(msg, vim.log.levels.INFO)
 
     vim.fn.jobstart(cmd, {
