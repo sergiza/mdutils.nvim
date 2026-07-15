@@ -48,8 +48,8 @@ local PDF_VIEWERS = {
 }
 
 local MEDIA_PLAYERS = {
-    { "vlc",      "--start-time", true  },  -- expects seconds
     { "mpv",      "--start",      false },  -- expects HH:MM:SS
+    { "vlc",      "--start-time", true  },  -- expects seconds
     { "xdg-open", nil,            false },
 }
 
