@@ -29,6 +29,11 @@ function M.run()
     if not target then target = candidates[1].link end
     if not target or target == "" then return end
 
+    if target:sub(1, 1) == "#" then
+        M.goto_header(target:sub(2))
+        return
+    end
+
     local is_url = target:match("^https?://")
     local full_path = target
 
@@ -48,6 +53,27 @@ function M.run()
         -- vim.fn.jobstart("xdg-open '" .. full_path .. "'", { detach = true, shell = true })
         vim.fn.jobstart({ "xdg-open", full_path }, { detach = true })
     end
+end
+
+local function slugify(text)
+    return text
+        :lower()
+        :gsub("%s+", "-")
+        :gsub("[^%w%-]", "")
+end
+
+function M.goto_header(anchor)
+    local want = slugify(anchor)
+    local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+    for i, line in ipairs(lines) do
+        local title = line:match("^#+%s+(.+)$")
+        if title and slugify(title) == want then
+            vim.api.nvim_win_set_cursor(0, { i, 0 })
+            vim.cmd("normal! zz")
+            return
+        end
+    end
+    vim.notify("mdutils: header not found: #" .. anchor, vim.log.levels.WARN)
 end
 
 return M
