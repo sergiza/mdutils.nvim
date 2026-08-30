@@ -1,44 +1,6 @@
+local util = require("mdutils.util")
+
 local M = {}
-
--- Parse [label](path) and optional trailing arg:
---   • timestamp    "HH:MM:SS" or "MM:SS"
---   • page number  num
-local function parse_link_and_arg(line)
-    local b1, e1 = line:find("%b[]")
-    if not b1 then return nil end
-
-    local b2, e2 = line:find("%b()", e1 + 1)
-    if not b2 then return nil end
-
-    local label = line:sub(b1 + 1, e1 - 1)
-    local path  = line:sub(b2 + 1, e2 - 1)
-
-    local after = line:sub(e2 + 1)
-    local timestamp = after:match("^%s*(%d?%d:%d%d:%d%d)") or after:match("^%s*(%d?%d:%d%d)")
-    local page = not timestamp and after:match("^%s*(%d+)%s*$") or nil
-
-    return label, path, timestamp, page
-end
-
-local function is_url(p)
-    return p:match("^%a[%w+.-]*://") ~= nil
-end
-
-local function decode_spaces_for_local(p)
-    if is_url(p) then return p end
-    return (p:gsub("%%20", " "))
-end
-
-local function resolve_path(path)
-    path = decode_spaces_for_local(path)
-    if is_url(path) or path:match("^/") then return path end
-    local base = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":p:h")
-    return vim.fn.fnamemodify(base .. "/" .. path, ":p")
-end
-
-local function is_pdf(path)
-    return path:match("%.[Pp][Dd][Ff]$") ~= nil
-end
 
 local PDF_VIEWERS = {
     { "zathura",  "--page"        },
@@ -52,6 +14,19 @@ local MEDIA_PLAYERS = {
     { "vlc",      "--start-time", true  },  -- expects seconds
     { "xdg-open", nil,            false },
 }
+
+-- Parse the optional trailing arg after a link:
+--   • timestamp    "HH:MM:SS" or "MM:SS"
+--   • page number  num
+local function parse_trailing_arg(after)
+    local timestamp = after:match("^%s*(%d?%d:%d%d:%d%d)") or after:match("^%s*(%d?%d:%d%d)")
+    local page = not timestamp and after:match("^%s*(%d+)%s*$") or nil
+    return timestamp, page
+end
+
+local function is_pdf(path)
+    return path:match("%.[Pp][Dd][Ff]$") ~= nil
+end
 
 local function find_software(list)
     for _, v in ipairs(list) do
@@ -133,14 +108,16 @@ end
 
 function M.run()
     local line = vim.api.nvim_get_current_line()
-    local _, path, ts, page = parse_link_and_arg(line)
+    local cursor_col = vim.api.nvim_win_get_cursor(0)[2] + 1
 
-    if not path or path == "" then
+    local entry = util.link_under_cursor(line, cursor_col)
+    if not entry or entry.link == "" then
         vim.notify("Mdutils openAt: no markdown link on this line", vim.log.levels.WARN)
         return
     end
 
-    local resolved = resolve_path(path)
+    local ts, page = parse_trailing_arg(line:sub(entry.stop + 1))
+    local resolved = util.resolve_path(entry.link)
 
     if is_pdf(resolved) then
         open_pdf(resolved, page and tonumber(page))
