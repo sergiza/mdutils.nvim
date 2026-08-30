@@ -47,7 +47,7 @@ function M.run()
     local full_path = util.resolve_path(target)
 
     local ext = full_path:match("^.+(%..+)$") or ""
-    if M.text_extensions[ext] then
+    if M.text_extensions[ext] or util.is_text_file(full_path) then
         vim.cmd("edit " .. vim.fn.fnameescape(full_path))
     else
         vim.fn.jobstart({ "xdg-open", full_path }, { detach = true })

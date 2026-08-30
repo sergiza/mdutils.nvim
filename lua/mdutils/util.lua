@@ -4,9 +4,17 @@ function M.is_url(p)
     return p:match("^%a[%w+.-]*://") ~= nil
 end
 
+-- returns true if non-binary text file
+function M.is_text_file(path)
+    if vim.fn.executable("file") == 0 or vim.fn.filereadable(path) == 0 then
+        return false
+    end
+    local enc = vim.fn.system({ "file", "--mime-encoding", "-b", path }):gsub("%s+", "")
+    return enc ~= "" and enc ~= "binary"
+end
+
 -- Find every [label](link) on a line, with its column span.
--- Uses balanced matching so parens inside the link (e.g. "(no take)") don't
--- truncate it. Returns a list of { start, stop, label, link } (1-based, inclusive).
+-- Returns a list of { start, stop, label, link }
 function M.find_links(line)
     local links = {}
     local pos = 1

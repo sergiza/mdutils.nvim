@@ -52,6 +52,8 @@ function M.run()
         openAt.open_pdf(resolved, page and tonumber(page))
     elseif M.media_extensions[ext] then
         openAt.open_media(resolved, ts)
+    elseif util.is_text_file(resolved) then
+        vim.cmd("edit " .. vim.fn.fnameescape(resolved))
     else
         vim.fn.jobstart({ "xdg-open", resolved }, { detach = true })
     end
