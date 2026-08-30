@@ -9,13 +9,15 @@ function M.setup()
             require("mdutils.todo").run()
         elseif arg == "openAt" then
             require("mdutils.openAt").run()
+        elseif arg == "openerOmni" then
+            require("mdutils.omniopener").run()
         else
             vim.notify("Mdutils: unknown command '" .. arg .. "'", vim.log.levels.ERROR)
         end
     end, {
         nargs = 1,
         complete = function()
-            return { "opener", "todo", "openAt" }
+            return { "opener", "todo", "openAt", "omni" }
         end,
     })
 end

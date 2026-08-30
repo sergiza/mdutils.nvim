@@ -18,13 +18,13 @@ local MEDIA_PLAYERS = {
 -- Parse the optional trailing arg after a link:
 --   • timestamp    "HH:MM:SS" or "MM:SS"
 --   • page number  num
-local function parse_trailing_arg(after)
+function M.parse_trailing_arg(after)
     local timestamp = after:match("^%s*(%d?%d:%d%d:%d%d)") or after:match("^%s*(%d?%d:%d%d)")
     local page = not timestamp and after:match("^%s*(%d+)%s*$") or nil
     return timestamp, page
 end
 
-local function is_pdf(path)
+function M.is_pdf(path)
     return path:match("%.[Pp][Dd][Ff]$") ~= nil
 end
 
@@ -47,7 +47,7 @@ local function ts_to_seconds(ts)
     return tonumber(h) * 3600 + tonumber(m) * 60 + tonumber(s)
 end
 
-local function open_pdf(resolved, page)
+function M.open_pdf(resolved, page)
     local viewer, page_flag = find_software(PDF_VIEWERS)
     if not viewer then
         vim.notify("Mdutils openAt: no PDF viewer found.", vim.log.levels.ERROR)
@@ -76,7 +76,7 @@ local function open_pdf(resolved, page)
     })
 end
 
-local function open_media(resolved, ts)
+function M.open_media(resolved, ts)
     local player, ts_flag, wants_seconds = find_software(MEDIA_PLAYERS)
     if not player then
         vim.notify("Mdutils openAt: no media player found.", vim.log.levels.ERROR)
@@ -116,13 +116,13 @@ function M.run()
         return
     end
 
-    local ts, page = parse_trailing_arg(line:sub(entry.stop + 1))
+    local ts, page = M.parse_trailing_arg(line:sub(entry.stop + 1))
     local resolved = util.resolve_path(entry.link)
 
-    if is_pdf(resolved) then
-        open_pdf(resolved, page and tonumber(page))
+    if M.is_pdf(resolved) then
+        M.open_pdf(resolved, page and tonumber(page))
     else
-        open_media(resolved, ts)
+        M.open_media(resolved, ts)
     end
 end
 
