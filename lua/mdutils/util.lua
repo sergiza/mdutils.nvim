@@ -5,16 +5,27 @@ function M.is_url(p)
 end
 
 -- Find every [label](link) on a line, with its column span.
--- Returns a list of { start, stop, label, link } (1-based, inclusive).
+-- Uses balanced matching so parens inside the link (e.g. "(no take)") don't
+-- truncate it. Returns a list of { start, stop, label, link } (1-based, inclusive).
 function M.find_links(line)
     local links = {}
-    for s, _, label, link in line:gmatch("()()%[(.-)%]%((.-)%)") do
-        table.insert(links, {
-            start = s,
-            stop  = s + #label + #link + 3,
-            label = label,
-            link  = link,
-        })
+    local pos = 1
+    while true do
+        local b1, e1 = line:find("%b[]", pos)
+        if not b1 then break end
+        -- the "(...)" must immediately follow the "]"
+        local b2, e2 = line:find("^%b()", e1 + 1)
+        if b2 then
+            table.insert(links, {
+                start = b1,
+                stop  = e2,
+                label = line:sub(b1 + 1, e1 - 1),
+                link  = line:sub(b2 + 1, e2 - 1),
+            })
+            pos = e2 + 1
+        else
+            pos = e1 + 1
+        end
     end
     return links
 end
