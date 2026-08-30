@@ -17,7 +17,7 @@ function M.setup()
     end, {
         nargs = 1,
         complete = function()
-            return { "opener", "todo", "openAt", "omni" }
+            return { "opener", "todo", "openAt", "openerOmni" }
         end,
     })
 end
