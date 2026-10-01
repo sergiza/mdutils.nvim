@@ -39,16 +39,18 @@ function M.run()
     local target = entry.link
     if target == "" then return end
 
-    if target:sub(1, 1) == "#" then
-        M.goto_header(target:sub(2))
+    local path, anchor = util.split_anchor(target)
+    if path == "" then
+        if anchor then M.goto_header(anchor) end
         return
     end
 
-    local full_path = util.resolve_path(target)
+    local full_path = util.resolve_path(path)
 
     local ext = full_path:match("^.+(%..+)$") or ""
     if M.text_extensions[ext] or util.is_text_file(full_path) then
         vim.cmd("edit " .. vim.fn.fnameescape(full_path))
+        if anchor and anchor ~= "" then M.goto_header(anchor) end
     else
         vim.fn.jobstart({ "xdg-open", full_path }, { detach = true })
     end

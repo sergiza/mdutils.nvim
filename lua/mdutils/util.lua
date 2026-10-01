@@ -49,6 +49,26 @@ function M.link_under_cursor(line, col)
     return links[1]
 end
 
+-- Split "path#anchor" on the first unescaped "#". "\#" stays a literal "#"
+-- in the path. Returns path, anchor (anchor is nil when there is none).
+--   "README.md#links"  → "README.md", "links"
+--   "#links"           → "", "links"
+--   "a\#b.md"          → "a#b.md", nil
+function M.split_anchor(target)
+    local i = 1
+    while i <= #target do
+        local c = target:sub(i, i)
+        if c == "\\" and target:sub(i + 1, i + 1) == "#" then
+            i = i + 2
+        elseif c == "#" then
+            return target:sub(1, i - 1):gsub("\\#", "#"), target:sub(i + 1)
+        else
+            i = i + 1
+        end
+    end
+    return (target:gsub("\\#", "#")), nil
+end
+
 -- Resolve a link's path: URLs pass through, local paths get ~/$VAR expanded,
 -- %20 decoded, and are made absolute relative to the current buffer's dir.
 function M.resolve_path(path)

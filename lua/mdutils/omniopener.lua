@@ -15,6 +15,7 @@ end
 
 -- One command that dispatches the link under the cursor to the right handler:
 --   #anchor          → jump to that header in this buffer
+--   file#anchor      → open file, then jump to that header (text files only)
 --   http(s)://...    → xdg-open (browser / desktop default)
 --   .md/.txt/no-ext  → edit in nvim
 --   .pdf             → PDF viewer      ->  at the trailing page num  if given
@@ -32,28 +33,34 @@ function M.run()
 
     local target = entry.link
 
-    if target:sub(1, 1) == "#" then
-        opener.goto_header(target:sub(2))
-        return
-    end
-
     if util.is_url(target) then
         vim.fn.jobstart({ "xdg-open", target }, { detach = true })
         return
     end
 
-    local resolved = util.resolve_path(target)
+    local path, anchor = util.split_anchor(target)
+    if path == "" then
+        if anchor then opener.goto_header(anchor) end
+        return
+    end
+
+    local function edit(p)
+        vim.cmd("edit " .. vim.fn.fnameescape(p))
+        if anchor and anchor ~= "" then opener.goto_header(anchor) end
+    end
+
+    local resolved = util.resolve_path(path)
     local ts, page = openAt.parse_trailing_arg(line:sub(entry.stop + 1))
 
     local ext = (resolved:match("^.+(%..+)$") or ""):lower()
     if opener.text_extensions[ext] then
-        vim.cmd("edit " .. vim.fn.fnameescape(resolved))
+        edit(resolved)
     elseif openAt.is_pdf(resolved) then
         openAt.open_pdf(resolved, page and tonumber(page))
     elseif M.media_extensions[ext] then
         openAt.open_media(resolved, ts)
     elseif util.is_text_file(resolved) then
-        vim.cmd("edit " .. vim.fn.fnameescape(resolved))
+        edit(resolved)
     else
         vim.fn.jobstart({ "xdg-open", resolved }, { detach = true })
     end
