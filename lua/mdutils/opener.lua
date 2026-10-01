@@ -1,58 +1,55 @@
 local util = require("mdutils.util")
+local openLink = require("mdutils.openLink")
+local openAt = require("mdutils.openAt")
 
 local M = {}
 
-M.text_extensions = {
-    [".md"] = true,
-    [".txt"] = true,
-    [""] = true,
-}
-
-local function slugify(text)
-    return text
-        :lower()
-        :gsub("%s+", "-")
-        :gsub("[^%w%-]", "")
+-- Extensions routed to the media player (seekable by timestamp).
+M.media_extensions = {}
+for _, ext in ipairs({
+    ".mp4", ".mkv", ".webm", ".mov", ".avi", ".flv", ".wmv", ".m4v", ".mpg", ".mpeg",
+    ".mp3", ".flac", ".wav", ".m4a", ".aac", ".ogg", ".opus",
+}) do
+    M.media_extensions[ext] = true
 end
 
-function M.goto_header(anchor)
-    local want = slugify(anchor)
-    local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
-    for i, line in ipairs(lines) do
-        local title = line:match("^#+%s+(.+)$")
-        if title and slugify(title) == want then
-            vim.api.nvim_win_set_cursor(0, { i, 0 })
-            vim.cmd("normal! zz")
-            return
-        end
-    end
-    vim.notify("mdutils: header not found: #" .. anchor, vim.log.levels.WARN)
-end
-
+-- One command that dispatches the link under the cursor to the right handler:
+--   #anchor          → jump to that header in this buffer
+--   file#anchor      → open file, then jump to that header (text files only)
+--   http(s)://...    → xdg-open (browser / desktop default)
+--   .md/.txt/no-ext  → edit in nvim
+--   .pdf             → PDF viewer      ->  at the trailing page num  if given
+--   video/audio      → media player    ->  at the trailing timestamp if given
+--   anything else    → xdg-open (desktop default)
 function M.run()
-    local line = vim.api.nvim_get_current_line()
-    local cursor_col = vim.api.nvim_win_get_cursor(0)[2] + 1
-
-    local entry = util.link_under_cursor(line, cursor_col)
+    local entry, line = util.current_link()
     if not entry then return end
 
-    local target = entry.link
-    if target == "" then return end
-
-    local path, anchor = util.split_anchor(target)
-    if path == "" then
-        if anchor then M.goto_header(anchor) end
+    if util.is_url(entry.link) then
+        util.xdg_open(entry.link)
         return
     end
 
-    local full_path = util.resolve_path(path)
+    local path, anchor = util.split_anchor(entry.link)
+    if path == "" then
+        if anchor then openLink.goto_header(anchor) end
+        return
+    end
 
-    local ext = full_path:match("^.+(%..+)$") or ""
-    if M.text_extensions[ext] or util.is_text_file(full_path) then
-        vim.cmd("edit " .. vim.fn.fnameescape(full_path))
-        if anchor and anchor ~= "" then M.goto_header(anchor) end
+    local resolved = util.resolve_path(path)
+    local ts, page = openAt.parse_trailing_arg(line:sub(entry.stop + 1))
+    local ext = util.extension(resolved)
+
+    if openLink.text_extensions[ext] then
+        openLink.edit(resolved, anchor)
+    elseif ext == ".pdf" then
+        openAt.open_pdf(resolved, page)
+    elseif M.media_extensions[ext] then
+        openAt.open_media(resolved, ts)
+    elseif util.is_text_file(resolved) then
+        openLink.edit(resolved, anchor)
     else
-        vim.fn.jobstart({ "xdg-open", full_path }, { detach = true })
+        util.xdg_open(resolved)
     end
 end
 

@@ -1,23 +1,26 @@
 local M = {}
 
+local COMMANDS = {
+    openLink   = "mdutils.openLink",
+    todo       = "mdutils.todo",
+    openAt     = "mdutils.openAt",
+    opener     = "mdutils.opener",
+}
+
 function M.setup()
     vim.api.nvim_create_user_command("Mdutils", function(opts)
-        local arg = opts.args
-        if arg == "opener" then
-            require("mdutils.opener").run()
-        elseif arg == "todo" then
-            require("mdutils.todo").run()
-        elseif arg == "openAt" then
-            require("mdutils.openAt").run()
-        elseif arg == "openerOmni" then
-            require("mdutils.omniopener").run()
-        else
-            vim.notify("Mdutils: unknown command '" .. arg .. "'", vim.log.levels.ERROR)
+        local mod = COMMANDS[opts.args]
+        if not mod then
+            vim.notify("Mdutils: unknown command '" .. opts.args .. "'", vim.log.levels.ERROR)
+            return
         end
+        require(mod).run()
     end, {
         nargs = 1,
         complete = function()
-            return { "opener", "todo", "openAt", "openerOmni" }
+            local keys = vim.tbl_keys(COMMANDS)
+            table.sort(keys)
+            return keys
         end,
     })
 end

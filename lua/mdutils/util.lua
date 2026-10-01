@@ -49,6 +49,33 @@ function M.link_under_cursor(line, col)
     return links[1]
 end
 
+-- Link under the cursor on the current line, plus the line itself.
+-- Warns and returns nil when there is no (non-empty) link.
+function M.current_link()
+    local line = vim.api.nvim_get_current_line()
+    local col = vim.api.nvim_win_get_cursor(0)[2] + 1
+    local entry = M.link_under_cursor(line, col)
+    if not entry or entry.link == "" then
+        M.notify("no markdown link on this line", vim.log.levels.WARN)
+        return nil
+    end
+    return entry, line
+end
+
+-- Lowercased extension with the dot (".md"), or "" when there is none.
+function M.extension(path)
+    local ext = vim.fn.fnamemodify(path, ":e")
+    return ext == "" and "" or "." .. ext:lower()
+end
+
+function M.xdg_open(target)
+    vim.fn.jobstart({ "xdg-open", target }, { detach = true })
+end
+
+function M.notify(msg, level)
+    vim.notify("Mdutils: " .. msg, level or vim.log.levels.INFO)
+end
+
 -- Split "path#anchor" on the first unescaped "#". "\#" stays a literal "#"
 -- in the path. Returns path, anchor (anchor is nil when there is none).
 --   "README.md#links"  → "README.md", "links"
