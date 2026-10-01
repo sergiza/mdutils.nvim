@@ -50,13 +50,13 @@ function M.link_under_cursor(line, col)
 end
 
 -- Link under the cursor on the current line, plus the line itself.
--- Warns and returns nil when there is no (non-empty) link.
+-- Returns nil when there is no (non-empty) link.
 function M.current_link()
     local line = vim.api.nvim_get_current_line()
     local col = vim.api.nvim_win_get_cursor(0)[2] + 1
     local entry = M.link_under_cursor(line, col)
     if not entry or entry.link == "" then
-        M.notify("no markdown link on this line", vim.log.levels.WARN)
+        -- M.notify("no markdown link on this line", vim.log.levels.WARN)
         return nil
     end
     return entry, line
