@@ -4,6 +4,7 @@ local M = {}
 
 local PDF_VIEWERS = {
     { "zathura",  "--page"        },
+    { "papers",   "--page-index"  },
     { "evince",   "--page-index"  },
     { "okular",   "--page"        },
     { "xdg-open", nil             },
