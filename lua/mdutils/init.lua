@@ -5,6 +5,7 @@ local COMMANDS = {
     todo       = "mdutils.todo",
     openAt     = "mdutils.openAt",
     opener     = "mdutils.opener",
+    headers    = "mdutils.headers",
 }
 
 function M.setup()

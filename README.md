@@ -20,6 +20,8 @@ Built for my own workflow, not meant to be general-purpose.
 
 - `:Mdutils todo`: Toggles checklist items status: `[ ] → [-] → [X] → [ ]`.
 
+- `:Mdutils headers`: Lists the buffer's Markdown headers in the quickfix list.
+
 <details>
 <summary>More info</summary>
 
