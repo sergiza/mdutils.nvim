@@ -14,7 +14,7 @@ Small personal plugin with utilities for working with Markdown in Neovim.
   | Anything else | `[x](image.png)` | opens with system default app |
 
   It combines two narrower commands:
-  - `:Mdutils openLink`: headers, URLs and text files; everything else goes to the system default app.
+  - `:Mdutils openLink`: handles headers, URLs and text files; everything else goes to the system default app.
   - `:Mdutils openAt`: opens PDFs at specified page and media at timestamp.
 
 - `:Mdutils todo`: Toggles checklist items status: `[ ] → [-] → [X] → [ ]`.
