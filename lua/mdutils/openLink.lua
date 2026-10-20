@@ -47,7 +47,7 @@ function M.run()
     if not entry then return end
 
     if util.is_url(entry.link) then
-        util.xdg_open(entry.link)
+        util.system_open(entry.link)
         return
     end
 
@@ -61,7 +61,7 @@ function M.run()
     if M.text_extensions[util.extension(resolved)] or util.is_text_file(resolved) then
         M.edit(resolved, anchor)
     else
-        util.xdg_open(resolved)
+        util.system_open(resolved)
     end
 end
 

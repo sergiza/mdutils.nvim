@@ -68,8 +68,21 @@ function M.extension(path)
     return ext == "" and "" or "." .. ext:lower()
 end
 
-function M.xdg_open(target)
-    vim.fn.jobstart({ "xdg-open", target }, { detach = true })
+-- Open with the OS default handler (xdg-open, open, start, ...).
+function M.system_open(target)
+    local _, err = vim.ui.open(target)
+    if err then M.notify(err, vim.log.levels.ERROR) end
+end
+
+-- Locate a program: on $PATH first, then (macOS) inside <app>.app bundles,
+-- which aren't on $PATH. Returns the command to run, or nil.
+function M.find_executable(name, app)
+    if vim.fn.executable(name) == 1 then return name end
+    if not app or vim.fn.has("mac") == 0 then return nil end
+    for _, dir in ipairs({ "/Applications", vim.fn.expand("~/Applications") }) do
+        local path = ("%s/%s.app/Contents/MacOS/%s"):format(dir, app, app)
+        if vim.fn.executable(path) == 1 then return path end
+    end
 end
 
 function M.notify(msg, level)

@@ -16,17 +16,17 @@ end
 -- One command that dispatches the link under the cursor to the right handler:
 --   #anchor          → jump to that header in this buffer
 --   file#anchor      → open file, then jump to that header (text files only)
---   http(s)://...    → xdg-open (browser / desktop default)
+--   http(s)://...    → system default (browser)
 --   .md/.txt/no-ext  → edit in nvim
 --   .pdf             → PDF viewer      ->  at the trailing page num  if given
 --   video/audio      → media player    ->  at the trailing timestamp if given
---   anything else    → xdg-open (desktop default)
+--   anything else    → system default app
 function M.run()
     local entry, line = util.current_link()
     if not entry then return end
 
     if util.is_url(entry.link) then
-        util.xdg_open(entry.link)
+        util.system_open(entry.link)
         return
     end
 
@@ -49,7 +49,7 @@ function M.run()
     elseif util.is_text_file(resolved) then
         openLink.edit(resolved, anchor)
     else
-        util.xdg_open(resolved)
+        util.system_open(resolved)
     end
 end
 
