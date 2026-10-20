@@ -1,3 +1,5 @@
+local util = require("mdutils.util")
+
 local M = {}
 
 local TITLE = "Markdown headers"
@@ -5,12 +7,15 @@ local TITLE = "Markdown headers"
 -- qf strips leading spaces, not NBSP
 local NBSP = "\194\160"
 
-vim.api.nvim_set_hl(0, "MdutilsQfH1", { fg = "#ff9e64", bold = true, default = true })
-vim.api.nvim_set_hl(0, "MdutilsQfH2", { fg = "#7dcfff", bold = true, default = true })
-vim.api.nvim_set_hl(0, "MdutilsQfH3", { fg = "#9ece6a", default = true })
-vim.api.nvim_set_hl(0, "MdutilsQfH4", { fg = "#bb9af7", default = true })
-vim.api.nvim_set_hl(0, "MdutilsQfH5", { link = "MdutilsQfH4", default = true })
-vim.api.nvim_set_hl(0, "MdutilsQfH6", { link = "MdutilsQfH4", default = true })
+local function set_highlights()
+    vim.api.nvim_set_hl(0, "MdutilsQfH1", { fg = "#ff9e64", bold = true, default = true })
+    vim.api.nvim_set_hl(0, "MdutilsQfH2", { fg = "#7dcfff", bold = true, default = true })
+    vim.api.nvim_set_hl(0, "MdutilsQfH3", { fg = "#9ece6a", default = true })
+    vim.api.nvim_set_hl(0, "MdutilsQfH4", { fg = "#bb9af7", default = true })
+    vim.api.nvim_set_hl(0, "MdutilsQfH5", { link = "MdutilsQfH4", default = true })
+    vim.api.nvim_set_hl(0, "MdutilsQfH6", { link = "MdutilsQfH4", default = true })
+end
+set_highlights()
 
 -- "fname|lnum col 1| " + indent + N hashes
 local PATTERNS = {}
@@ -39,10 +44,10 @@ local function apply_matches()
     vim.w.mdutils_qf_match_ids = ids
 end
 
-vim.api.nvim_create_autocmd("BufWinEnter", {
-    group = vim.api.nvim_create_augroup("MdutilsHeaders", { clear = true }),
-    callback = apply_matches,
-})
+local group = vim.api.nvim_create_augroup("MdutilsHeaders", { clear = true })
+vim.api.nvim_create_autocmd("BufWinEnter", { group = group, callback = apply_matches })
+-- :colorscheme clears all highlight groups
+vim.api.nvim_create_autocmd("ColorScheme", { group = group, callback = set_highlights })
 
 function M.run()
     local bufnr = vim.api.nvim_get_current_buf()
@@ -53,24 +58,15 @@ function M.run()
             bufnr = vim.api.nvim_win_get_buf(prev)
         end
     end
-    local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
     local items = {}
-    local in_fence = false
-
-    for lnum, line in ipairs(lines) do
-        if line:match("^%s*```") or line:match("^%s*~~~") then
-            in_fence = not in_fence
-        elseif not in_fence then
-            local hashes, text = line:match("^(#+)%s+(.*)")
-            if hashes and #hashes <= 6 then
-                table.insert(items, {
-                    bufnr = bufnr,
-                    lnum = lnum,
-                    col = 1,
-                    text = string.rep(NBSP .. NBSP, #hashes - 1) .. hashes .. " " .. text,
-                })
-            end
-        end
+    for _, h in ipairs(util.headers(vim.api.nvim_buf_get_lines(bufnr, 0, -1, false))) do
+        local hashes = string.rep("#", h.level)
+        table.insert(items, {
+            bufnr = bufnr,
+            lnum = h.lnum,
+            col = 1,
+            text = string.rep(NBSP .. NBSP, h.level - 1) .. hashes .. " " .. h.text,
+        })
     end
 
     if #items == 0 then

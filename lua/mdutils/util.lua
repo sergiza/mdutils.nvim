@@ -85,6 +85,30 @@ function M.find_executable(name, app)
     end
 end
 
+-- ATX headers ("## Title") outside ``` / ~~~ code fences.
+-- Returns a list of { lnum, level, text }, text without closing "#"s.
+function M.headers(lines)
+    local headers = {}
+    local fence -- marker that opened the current fence, if inside one
+    for lnum, line in ipairs(lines) do
+        local marker = line:match("^%s*(```+)") or line:match("^%s*(~~~+)")
+        if marker then
+            if not fence then
+                fence = marker
+            elseif marker:sub(1, 1) == fence:sub(1, 1) and #marker >= #fence then
+                fence = nil
+            end
+        elseif not fence then
+            local hashes, text = line:match("^(#+)%s+(.-)%s*$")
+            if hashes and #hashes <= 6 then
+                text = text:gsub("%s+#+$", ""):gsub("^#+$", "")
+                table.insert(headers, { lnum = lnum, level = #hashes, text = text })
+            end
+        end
+    end
+    return headers
+end
+
 function M.notify(msg, level)
     vim.notify("Mdutils: " .. msg, level or vim.log.levels.INFO)
 end
@@ -110,10 +134,12 @@ function M.split_anchor(target)
 end
 
 -- Resolve a link's path: URLs pass through, local paths get ~/$VAR expanded,
--- %20 decoded, and are made absolute relative to the current buffer's dir.
+-- %XX decoded, and are made absolute relative to the current buffer's dir.
 function M.resolve_path(path)
     if M.is_url(path) then return path end
-    local p = vim.fn.expand(path):gsub("%%20", " ")
+    local p = vim.fs.normalize(path):gsub("%%(%x%x)", function(hex)
+        return string.char(tonumber(hex, 16))
+    end)
     if p:sub(1, 1) == "/" then return p end
     local base = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":p:h")
     return vim.fn.fnamemodify(base .. "/" .. p, ":p")

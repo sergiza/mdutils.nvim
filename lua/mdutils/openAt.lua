@@ -94,18 +94,4 @@ function M.open_media(resolved, ts)
     spawn(cmd, { [4] = true })  -- mpv exits 4 when quit via signal/window close
 end
 
-function M.run()
-    local entry, line = util.current_link()
-    if not entry then return end
-
-    local ts, page = M.parse_trailing_arg(line:sub(entry.stop + 1))
-    local resolved = util.resolve_path(entry.link)
-
-    if util.extension(resolved) == ".pdf" then
-        M.open_pdf(resolved, page)
-    else
-        M.open_media(resolved, ts)
-    end
-end
-
 return M
