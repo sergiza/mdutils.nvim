@@ -7,13 +7,24 @@ local TITLE = "Markdown headers"
 -- qf strips leading spaces, not NBSP
 local NBSP = "\194\160"
 
+-- Follow the colorscheme: link to the first heading group it defines.
+local function heading_group(level)
+    for _, name in ipairs({
+        "@markup.heading." .. level .. ".markdown",
+        "@markup.heading." .. level,
+        "@markup.heading",
+    }) do
+        if next(vim.api.nvim_get_hl(0, { name = name })) then
+            return name
+        end
+    end
+    return "Title"
+end
+
 local function set_highlights()
-    vim.api.nvim_set_hl(0, "MdutilsQfH1", { fg = "#ff9e64", bold = true, default = true })
-    vim.api.nvim_set_hl(0, "MdutilsQfH2", { fg = "#7dcfff", bold = true, default = true })
-    vim.api.nvim_set_hl(0, "MdutilsQfH3", { fg = "#9ece6a", default = true })
-    vim.api.nvim_set_hl(0, "MdutilsQfH4", { fg = "#bb9af7", default = true })
-    vim.api.nvim_set_hl(0, "MdutilsQfH5", { link = "MdutilsQfH4", default = true })
-    vim.api.nvim_set_hl(0, "MdutilsQfH6", { link = "MdutilsQfH4", default = true })
+    for level = 1, 6 do
+        vim.api.nvim_set_hl(0, "MdutilsQfH" .. level, { link = heading_group(level), default = true })
+    end
 end
 set_highlights()
 

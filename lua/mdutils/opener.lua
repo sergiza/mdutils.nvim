@@ -39,6 +39,14 @@ function M.goto_header(anchor)
     util.notify("header not found: #" .. anchor, vim.log.levels.WARN)
 end
 
+-- Missing or empty files are edited too (new note, empty config, ...).
+local function is_editable(path)
+    local stat = vim.uv.fs_stat(path)
+    if not stat then return true end
+    if stat.type == "file" and stat.size == 0 then return true end
+    return util.is_text_file(path)
+end
+
 -- Open a file in nvim and, if given, jump to the header anchor.
 function M.edit(path, anchor)
     vim.cmd("edit " .. vim.fn.fnameescape(path))
@@ -49,7 +57,7 @@ end
 --   #anchor          → jump to that header in this buffer
 --   file#anchor      → open file, then jump to that header (text files only)
 --   http(s)://...    → system default (browser)
---   .md/.txt/no-ext  → edit in nvim
+--   .md/.txt/no-ext  → edit in nvim (also any text, missing or empty file)
 --   .pdf             → PDF viewer      ->  at the trailing page num  if given
 --   video/audio      → media player    ->  at the trailing timestamp if given
 --   anything else    → system default app
@@ -63,6 +71,7 @@ function M.run()
     end
 
     local path, anchor = util.split_anchor(entry.link)
+    if anchor then anchor = util.url_decode(anchor) end
     if path == "" then
         if anchor then M.goto_header(anchor) end
         return
@@ -78,7 +87,7 @@ function M.run()
         openAt.open_pdf(resolved, page)
     elseif M.media_extensions[ext] then
         openAt.open_media(resolved, ts)
-    elseif util.is_text_file(resolved) then
+    elseif is_editable(resolved) then
         M.edit(resolved, anchor)
     else
         util.system_open(resolved)

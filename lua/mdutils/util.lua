@@ -133,13 +133,18 @@ function M.split_anchor(target)
     return (target:gsub("\\#", "#")), nil
 end
 
+-- Decode %XX escapes ("%20" → " ").
+function M.url_decode(s)
+    return (s:gsub("%%(%x%x)", function(hex)
+        return string.char(tonumber(hex, 16))
+    end))
+end
+
 -- Resolve a link's path: URLs pass through, local paths get ~/$VAR expanded,
 -- %XX decoded, and are made absolute relative to the current buffer's dir.
 function M.resolve_path(path)
     if M.is_url(path) then return path end
-    local p = vim.fs.normalize(path):gsub("%%(%x%x)", function(hex)
-        return string.char(tonumber(hex, 16))
-    end)
+    local p = M.url_decode(vim.fs.normalize(path))
     if p:sub(1, 1) == "/" then return p end
     local base = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":p:h")
     return vim.fn.fnamemodify(base .. "/" .. p, ":p")

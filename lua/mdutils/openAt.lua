@@ -2,14 +2,14 @@ local util = require("mdutils.util")
 
 local M = {}
 
-local PDF_VIEWERS = {
+M.PDF_VIEWERS = {
     { "zathura",  "--page"        },
     { "papers",   "--page-index"  },
     { "evince",   "--page-index"  },
     { "okular",   "--page"        },
 }
 
-local MEDIA_PLAYERS = {
+M.MEDIA_PLAYERS = {
     { "mpv", "--start",      false, app = "mpv" },  -- expects HH:MM:SS
     { "vlc", "--start-time", true,  app = "VLC" },  -- expects seconds
 }
@@ -55,7 +55,7 @@ local function spawn(cmd, ok_codes)
 end
 
 function M.open_pdf(resolved, page)
-    local viewer, page_flag = find_software(PDF_VIEWERS)
+    local viewer, page_flag = find_software(M.PDF_VIEWERS)
     if not viewer then
         util.system_open(resolved)
         return
@@ -74,7 +74,7 @@ function M.open_pdf(resolved, page)
 end
 
 function M.open_media(resolved, ts)
-    local player, ts_flag, wants_seconds = find_software(MEDIA_PLAYERS)
+    local player, ts_flag, wants_seconds = find_software(M.MEDIA_PLAYERS)
     if not player then
         util.system_open(resolved)
         return
