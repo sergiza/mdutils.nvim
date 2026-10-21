@@ -27,18 +27,6 @@ function M.check()
         h.error("Neovim 0.10+ required (vim.ui.open)")
     end
 
-    if vim.fn.exists(":Mdutils") == 2 then
-        h.ok(":Mdutils command registered")
-    else
-        h.warn(":Mdutils command not registered", "Call require('mdutils').setup()")
-    end
-
-    if vim.fn.executable("file") == 1 then
-        h.ok("file: found (text file detection)")
-    else
-        h.warn("file: not found", "Links to unknown extensions will open with the system default app")
-    end
-
     local fallback = "Opens with the system default app, without jumping to %s"
     check_software("PDF viewer", openAt.PDF_VIEWERS, fallback:format("the page"))
     check_software("Media player", openAt.MEDIA_PLAYERS, fallback:format("the timestamp"))
