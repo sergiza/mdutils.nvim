@@ -20,8 +20,8 @@ Small personal plugin with utilities for working with Markdown in Neovim.
 <details>
 <summary>More info</summary>
 
-- **PDF viewers** (first one found): `zathura`, `papers`, `evince`, `okular`. Otherwise the system default app, without jumping to the page.
-- **Media players** (first one found): `mpv`, `vlc`. Otherwise the system default app, without jumping to the timestamp.
+- **PDF viewers** (first one found): `zathura`, `papers`, `evince`, `atril`, `xreader`, `okular`, `sioyek`. Otherwise the system default app, without jumping to the page.
+- **Media players** (first one found): `mpv`, `iina`, `vlc`. Otherwise the system default app, without jumping to the timestamp.
 - **Paths** are relative to the current file; `~` and `$VARS` are expanded, `%XX` escapes are decoded (`%20` → space).
 - `\#` escapes a literal `#` in a path: `[x](notes\#1.md#header)`.
 

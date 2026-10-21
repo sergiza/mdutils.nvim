@@ -6,12 +6,16 @@ M.PDF_VIEWERS = {
     { "zathura",  "--page"        },
     { "papers",   "--page-index"  },
     { "evince",   "--page-index"  },
+    { "atril",    "--page-index"  },
+    { "xreader",  "--page-index"  },
     { "okular",   "--page"        },
+    { "sioyek",   "--page",       app = "sioyek" },
 }
 
 M.MEDIA_PLAYERS = {
-    { "mpv", "--start",      false, app = "mpv" },  -- expects HH:MM:SS
-    { "vlc", "--start-time", true,  app = "VLC" },  -- expects seconds
+    { "mpv",  "--start",      false, app = "mpv" },  -- expects HH:MM:SS
+    { "iina", "--mpv-start",  false },               -- expects HH:MM:SS
+    { "vlc",  "--start-time", true,  app = "VLC" },  -- expects seconds
 }
 
 -- Parse the optional trailing arg after a link:
