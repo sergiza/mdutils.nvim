@@ -1,7 +1,7 @@
 # mdutils.nvim
 Small personal plugin with utilities for working with Markdown in Neovim. 
 
-- `:Mdutils opener`: Opens the Markdown link (`[text](path)`) under the cursor, dispatches the link by type. If a timestamp (media) or page number (PDF) follows the link, jumps to it.
+- `:Mdutils opener`: Opens the Markdown link (`[text](path)`) under the cursor. If the link is followed by a timestamp (audio/video) or a page number (PDF), it opens at that position.
 
   | Type | Example | Action |
   |---|---|---|
